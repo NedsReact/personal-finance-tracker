@@ -1,4 +1,4 @@
-import { PieChart, BarChart } from '@mui/x-charts';
+import { PieChart, BarChart, useDrawingArea } from '@mui/x-charts';
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
@@ -44,8 +44,11 @@ export default function ChartsDisplay({ transactions, totalIncome, totalExpenses
               },
             ]}
             height={200}
-            width={400}
             slotProps={{ legend: {} }}
+            sx={{
+              width: '100%',
+              '.MuiChartsSvg-root': { width: '100%' },
+            }}
           />
         ) : (
           <Typography>No expense data to display for categories.</Typography>
@@ -58,7 +61,10 @@ export default function ChartsDisplay({ transactions, totalIncome, totalExpenses
           xAxis={[{ scaleType: 'band', data: incomeExpenseData.map(d => d.label) }]}
           series={[{ data: incomeExpenseData.map(d => d.value) }]}
           height={200}
-          width={400}
+          sx={{
+            width: '100%',
+            '.MuiChartsSvg-root': { width: '100%' },
+          }}
         />
       </Box>
 

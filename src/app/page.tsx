@@ -16,6 +16,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import Typography from "@mui/material/Typography";
 
 export default function Home() {
   // For demo, use userId '1'
@@ -25,6 +30,13 @@ export default function Home() {
   );
   const [editTx, setEditTx] = useState<MockTransaction | null>(null);
   const [deleteTx, setDeleteTx] = useState<MockTransaction | null>(null);
+
+  // Filter state
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedType, setSelectedType] = useState<"" | "income" | "expense">("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const totalIncome = transactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
   const totalExpenses = transactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
@@ -43,6 +55,24 @@ export default function Home() {
   const [newCategory, setNewCategory] = useState("");
 
   const categories = [...predefinedCategories, ...userCategories];
+
+  // Filtered transactions
+  const filteredTransactions = transactions.filter(tx => {
+    // Date range filter
+    if (startDate && new Date(tx.date) < new Date(startDate)) return false;
+    if (endDate && new Date(tx.date) > new Date(endDate)) return false;
+
+    // Category filter
+    if (selectedCategory && tx.category !== selectedCategory) return false;
+
+    // Type filter
+    if (selectedType && tx.type !== selectedType) return false;
+
+    // Description search
+    if (searchQuery && !tx.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+
+    return true;
+  });
 
   function handleAdd(tx: Omit<MockTransaction, "id" | "userId">) {
     setTransactions(prev => [
@@ -81,9 +111,61 @@ export default function Home() {
         categories={categories}
         onAddCategory={() => setAddCategoryOpen(true)}
       />
+      <Box mt={4} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography variant="h6" component="h2">Filter and Search Transactions</Typography>
+        <TextField
+          label="Search by Description"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          fullWidth
+        />
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+          <TextField
+            label="Start Date"
+            type="date"
+            value={startDate}
+            onChange={e => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ flex: 1, minWidth: 180 }}
+          />
+          <TextField
+            label="End Date"
+            type="date"
+            value={endDate}
+            onChange={e => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ flex: 1, minWidth: 180 }}
+          />
+          <FormControl sx={{ flex: 1, minWidth: 180 }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={selectedCategory}
+              label="Category"
+              onChange={e => setSelectedCategory(e.target.value)}
+            >
+              <MenuItem value="">All Categories</MenuItem>
+              {categories.map(cat => (
+                <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ flex: 1, minWidth: 180 }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              value={selectedType}
+              label="Type"
+              onChange={e => setSelectedType(e.target.value as "" | "income" | "expense")}
+            >
+              <MenuItem value="">All Types</MenuItem>
+              <MenuItem value="income">Income</MenuItem>
+              <MenuItem value="expense">Expense</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Box>
       <Box mt={2}>
         <TransactionsList
-          transactions={transactions.slice(0, 10).map(tx => ({
+          transactions={filteredTransactions.slice(0, 10).map(tx => ({
             ...tx,
             actions: (
               <>
