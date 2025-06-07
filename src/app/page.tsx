@@ -4,6 +4,7 @@ import Container from "@mui/material/Container";
 import DashboardSummary from "@/components/DashboardSummary";
 import TransactionsList from "@/components/TransactionsList";
 import TransactionForm from "@/components/TransactionForm";
+import ChartsDisplay from "@/components/ChartsDisplay";
 import { mockTransactions, MockTransaction } from "@/lib/mockTransactions";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
@@ -93,6 +94,12 @@ export default function Home() {
           }))}
         />
       </Box>
+      <ChartsDisplay
+        transactions={transactions}
+        totalIncome={totalIncome}
+        totalExpenses={totalExpenses}
+        balance={balance}
+      />
       {/* Edit Dialog */}
       <Dialog open={!!editTx} onClose={() => setEditTx(null)}>
         <DialogTitle>Edit Transaction</DialogTitle>
