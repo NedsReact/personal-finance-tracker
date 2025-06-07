@@ -9,22 +9,15 @@ import FormControl from "@mui/material/FormControl";
 import Typography from "@mui/material/Typography";
 import type { MockTransaction } from "@/lib/mockTransactions";
 
-const categories = [
-  "Salary",
-  "Freelance",
-  "Groceries",
-  "Transport",
-  "Entertainment",
-  "Other",
-];
-
 type TransactionFormProps = {
   initial?: Partial<MockTransaction>;
   onSubmit: (tx: Omit<MockTransaction, "id" | "userId">) => void;
   submitLabel?: string;
+  categories: string[];
+  onAddCategory: () => void;
 };
 
-export default function TransactionForm({ initial = {}, onSubmit, submitLabel = "Add Transaction" }: TransactionFormProps) {
+export default function TransactionForm({ initial = {}, onSubmit, submitLabel = "Add Transaction", categories, onAddCategory }: TransactionFormProps) {
   const [date, setDate] = useState(initial.date || "");
   const [amount, setAmount] = useState(initial.amount?.toString() || "");
   const [category, setCategory] = useState(initial.category || "");
@@ -71,11 +64,18 @@ export default function TransactionForm({ initial = {}, onSubmit, submitLabel = 
         <Select
           value={category}
           label="Category"
-          onChange={e => setCategory(e.target.value)}
+          onChange={e => {
+            if (e.target.value === "__add__") {
+              onAddCategory();
+              return;
+            }
+            setCategory(e.target.value);
+          }}
         >
           {categories.map(cat => (
             <MenuItem key={cat} value={cat}>{cat}</MenuItem>
           ))}
+          <MenuItem value="__add__" style={{ fontStyle: 'italic' }}>+ Add Category</MenuItem>
         </Select>
       </FormControl>
       <TextField

@@ -14,6 +14,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
 export default function Home() {
   // For demo, use userId '1'
@@ -27,6 +28,20 @@ export default function Home() {
   const totalIncome = transactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
   const totalExpenses = transactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
   const balance = totalIncome - totalExpenses;
+
+  const predefinedCategories = [
+    "Salary",
+    "Freelance",
+    "Groceries",
+    "Transport",
+    "Entertainment",
+    "Other",
+  ];
+  const [userCategories, setUserCategories] = useState<string[]>([]);
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+
+  const categories = [...predefinedCategories, ...userCategories];
 
   function handleAdd(tx: Omit<MockTransaction, "id" | "userId">) {
     setTransactions(prev => [
@@ -51,10 +66,20 @@ export default function Home() {
     setDeleteTx(null);
   }
 
+  function handleAddCategory(name: string) {
+    if (!name || categories.includes(name)) return;
+    setUserCategories(prev => [...prev, name]);
+  }
+
   return (
     <Container maxWidth="md" sx={{ mt: 6 }}>
       <DashboardSummary totalIncome={totalIncome} totalExpenses={totalExpenses} balance={balance} />
-      <TransactionForm onSubmit={handleAdd} submitLabel="Add Transaction" />
+      <TransactionForm
+        onSubmit={handleAdd}
+        submitLabel="Add Transaction"
+        categories={categories}
+        onAddCategory={() => setAddCategoryOpen(true)}
+      />
       <Box mt={2}>
         <TransactionsList
           transactions={transactions.slice(0, 10).map(tx => ({
@@ -77,6 +102,8 @@ export default function Home() {
               initial={editTx}
               onSubmit={handleEdit}
               submitLabel="Save Changes"
+              categories={categories}
+              onAddCategory={() => setAddCategoryOpen(true)}
             />
           )}
         </DialogContent>
@@ -93,6 +120,35 @@ export default function Home() {
         <DialogActions>
           <Button onClick={() => setDeleteTx(null)}>Cancel</Button>
           <Button color="error" onClick={handleDelete}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Add Category Dialog */}
+      <Dialog open={addCategoryOpen} onClose={() => setAddCategoryOpen(false)}>
+        <DialogTitle>Add New Category</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 1 }}>
+            <TextField
+              label="Category Name"
+              value={newCategory}
+              onChange={e => setNewCategory(e.target.value)}
+              fullWidth
+              autoFocus
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddCategoryOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              handleAddCategory(newCategory.trim());
+              setNewCategory("");
+              setAddCategoryOpen(false);
+            }}
+            disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
+            variant="contained"
+          >
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>
