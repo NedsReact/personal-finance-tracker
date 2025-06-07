@@ -54,6 +54,14 @@ export default function Home() {
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
+  // Budget state
+  const [categoryBudgets, setCategoryBudgets] = useState<Record<string, number>>({});
+  const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
+
+  // Savings Goal state
+  const [savingsGoal, setSavingsGoal] = useState<number>(0);
+  const [savingsGoalDialogOpen, setSavingsGoalDialogOpen] = useState(false);
+
   const categories = [...predefinedCategories, ...userCategories];
 
   // Filtered transactions
@@ -111,6 +119,10 @@ export default function Home() {
         categories={categories}
         onAddCategory={() => setAddCategoryOpen(true)}
       />
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <Button variant="outlined" onClick={() => setBudgetDialogOpen(true)}>Set Budgets</Button>
+        <Button variant="outlined" onClick={() => setSavingsGoalDialogOpen(true)}>Set Savings Goal</Button>
+      </Box>
       <Box mt={4} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Typography variant="h6" component="h2">Filter and Search Transactions</Typography>
         <TextField
@@ -181,6 +193,8 @@ export default function Home() {
         totalIncome={totalIncome}
         totalExpenses={totalExpenses}
         balance={balance}
+        categoryBudgets={categoryBudgets}
+        savingsGoal={savingsGoal}
       />
       {/* Edit Dialog */}
       <Dialog open={!!editTx} onClose={() => setEditTx(null)}>
@@ -238,6 +252,50 @@ export default function Home() {
           >
             Add
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Budget Dialog */}
+      <Dialog open={budgetDialogOpen} onClose={() => setBudgetDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Set Monthly Budgets</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+            {categories.map(cat => (
+              <TextField
+                key={cat}
+                label={`Budget for ${cat}`}
+                type="number"
+                value={categoryBudgets[cat] || ""}
+                onChange={e => setCategoryBudgets(prev => ({ ...prev, [cat]: Number(e.target.value) }))}
+                fullWidth
+              />
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBudgetDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setBudgetDialogOpen(false)} variant="contained">Save Budgets</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Savings Goal Dialog */}
+      <Dialog open={savingsGoalDialogOpen} onClose={() => setSavingsGoalDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Set Savings Goal</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 1 }}>
+            <TextField
+              label="Savings Goal Amount"
+              type="number"
+              value={savingsGoal || ""}
+              onChange={e => setSavingsGoal(Number(e.target.value))}
+              fullWidth
+              autoFocus
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSavingsGoalDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setSavingsGoalDialogOpen(false)} variant="contained">Save Goal</Button>
         </DialogActions>
       </Dialog>
     </Container>

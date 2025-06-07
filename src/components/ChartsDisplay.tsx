@@ -1,4 +1,4 @@
-import { PieChart, BarChart, useDrawingArea } from '@mui/x-charts';
+import { PieChart, BarChart } from '@mui/x-charts';
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
@@ -7,9 +7,11 @@ interface ChartsDisplayProps {
   totalIncome: number;
   totalExpenses: number;
   balance: number;
+  categoryBudgets: Record<string, number>;
+  savingsGoal: number;
 }
 
-export default function ChartsDisplay({ transactions, totalIncome, totalExpenses, balance }: ChartsDisplayProps) {
+export default function ChartsDisplay({ transactions, totalIncome, totalExpenses, balance, categoryBudgets, savingsGoal }: ChartsDisplayProps) {
   const spendingByCategory = transactions
     .filter(tx => tx.type === 'expense')
     .reduce((acc, tx) => {
@@ -76,6 +78,69 @@ export default function ChartsDisplay({ transactions, totalIncome, totalExpenses
         <Typography variant="body2" color="text.secondary">
           (A full savings growth chart would require historical balance data over time.)
         </Typography>
+      </Box>
+
+      <Box>
+        <Typography variant="h6">Budget Progress by Category</Typography>
+        {Object.keys(categoryBudgets).length > 0 ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {Object.entries(categoryBudgets).map(([category, budget]) => {
+              const spent = spendingByCategory[category] || 0;
+              const progress = budget > 0 ? (spent / budget) * 100 : 0;
+              const progressBarColor = progress > 100 ? 'error.main' : 'primary.main';
+
+              return (
+                <Box key={category} sx={{ mb: 1 }}>
+                  <Typography variant="body1">{category}: ${spent.toLocaleString()} / ${budget.toLocaleString()}</Typography>
+                  <Box sx={{ width: '100%', bgcolor: 'grey.300', borderRadius: 1, overflow: 'hidden' }}>
+                    <Box
+                      sx={{
+                        width: `${Math.min(100, progress)}%`,
+                        height: 10,
+                        bgcolor: progressBarColor,
+                        borderRadius: 1,
+                      }}
+                    />
+                  </Box>
+                  {progress > 100 && (
+                    <Typography variant="body2" color="error.main">Over budget!</Typography>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        ) : (
+          <Typography>No budgets set yet. Set budgets to track progress.</Typography>
+        )}
+      </Box>
+
+      <Box>
+        <Typography variant="h6">Savings Goal Progress</Typography>
+        {savingsGoal > 0 ? (
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="body1">Goal: ${savingsGoal.toLocaleString()}</Typography>
+            <Typography variant="body1">Current Savings: ${balance.toLocaleString()}</Typography>
+            <Box sx={{ width: '100%', bgcolor: 'grey.300', borderRadius: 1, overflow: 'hidden', mt: 1 }}>
+              <Box
+                sx={{
+                  width: `${Math.min(100, (balance / savingsGoal) * 100)}%`,
+                  height: 10,
+                  bgcolor: balance >= savingsGoal ? 'success.main' : 'info.main',
+                  borderRadius: 1,
+                }}
+              />
+            </Box>
+            {balance >= savingsGoal ? (
+              <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>Goal Reached!</Typography>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                ${(savingsGoal - balance).toLocaleString()} remaining
+              </Typography>
+            )}
+          </Box>
+        ) : (
+          <Typography>No savings goal set yet. Set a goal to track your progress.</Typography>
+        )}
       </Box>
     </Box>
   );
