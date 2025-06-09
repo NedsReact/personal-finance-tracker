@@ -78,3 +78,18 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - Implement login/signup pages and mock authentication logic.
 - Add dashboard and transaction management features.
 - Continue with the plan above!
+
+## Running Tests
+
+To run unit and integration tests with Jest:
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Run tests:
+   ```bash
+   npm test
+   ```
+
+Test files should be named with `.test.ts` or `.test.tsx` and placed next to the code or in a `__tests__` folder.

@@ -25,9 +25,7 @@ import Typography from "@mui/material/Typography";
 export default function Home() {
   // For demo, use userId '1'
   const userId = '1';
-  const [transactions, setTransactions] = useState<MockTransaction[]>(
-    mockTransactions.filter(tx => tx.userId === userId)
-  );
+  const [transactions, setTransactions] = useState<MockTransaction[]>([]);
   const [editTx, setEditTx] = useState<MockTransaction | null>(null);
   const [deleteTx, setDeleteTx] = useState<MockTransaction | null>(null);
 
@@ -114,10 +112,12 @@ export default function Home() {
     <Container maxWidth="md" sx={{ mt: 6 }}>
       <DashboardSummary totalIncome={totalIncome} totalExpenses={totalExpenses} balance={balance} />
       <TransactionForm
-        onSubmit={handleAdd}
-        submitLabel="Add Transaction"
+        onSubmit={editTx ? handleEdit : handleAdd}
+        submitLabel={editTx ? "Update Transaction" : "Add Transaction"}
         categories={categories}
         onAddCategory={() => setAddCategoryOpen(true)}
+        data-editing={!!editTx}
+        initialValues={editTx || undefined}
       />
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <Button variant="outlined" onClick={() => setBudgetDialogOpen(true)}>Set Budgets</Button>
@@ -181,8 +181,21 @@ export default function Home() {
             ...tx,
             actions: (
               <>
-                <IconButton size="small" onClick={() => setEditTx(tx)}><EditIcon fontSize="small" /></IconButton>
-                <IconButton size="small" color="error" onClick={() => setDeleteTx(tx)}><DeleteIcon fontSize="small" /></IconButton>
+                <IconButton 
+                  size="small" 
+                  onClick={() => setEditTx(tx)}
+                  aria-label={`Edit transaction ${tx.description}`}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton 
+                  size="small" 
+                  color="error" 
+                  onClick={() => setDeleteTx(tx)}
+                  aria-label={`Delete transaction ${tx.description}`}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
               </>
             )
           }))}
@@ -200,21 +213,17 @@ export default function Home() {
       <Dialog open={!!editTx} onClose={() => setEditTx(null)}>
         <DialogTitle>Edit Transaction</DialogTitle>
         <DialogContent>
-          {editTx && (
-            <TransactionForm
-              initial={editTx}
-              onSubmit={handleEdit}
-              submitLabel="Save Changes"
-              categories={categories}
-              onAddCategory={() => setAddCategoryOpen(true)}
-            />
-          )}
+          <TransactionForm
+            onSubmit={handleEdit}
+            submitLabel="Update"
+            categories={categories}
+            onAddCategory={() => setAddCategoryOpen(true)}
+            initialValues={editTx || undefined}
+            data-editing={true}
+          />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditTx(null)}>Cancel</Button>
-        </DialogActions>
       </Dialog>
-      {/* Delete Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteTx} onClose={() => setDeleteTx(null)}>
         <DialogTitle>Delete Transaction</DialogTitle>
         <DialogContent>
@@ -222,80 +231,7 @@ export default function Home() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteTx(null)}>Cancel</Button>
-          <Button color="error" onClick={handleDelete}>Delete</Button>
-        </DialogActions>
-      </Dialog>
-      {/* Add Category Dialog */}
-      <Dialog open={addCategoryOpen} onClose={() => setAddCategoryOpen(false)}>
-        <DialogTitle>Add New Category</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 1 }}>
-            <TextField
-              label="Category Name"
-              value={newCategory}
-              onChange={e => setNewCategory(e.target.value)}
-              fullWidth
-              autoFocus
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddCategoryOpen(false)}>Cancel</Button>
-          <Button
-            onClick={() => {
-              handleAddCategory(newCategory.trim());
-              setNewCategory("");
-              setAddCategoryOpen(false);
-            }}
-            disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
-            variant="contained"
-          >
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Budget Dialog */}
-      <Dialog open={budgetDialogOpen} onClose={() => setBudgetDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Set Monthly Budgets</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            {categories.map(cat => (
-              <TextField
-                key={cat}
-                label={`Budget for ${cat}`}
-                type="number"
-                value={categoryBudgets[cat] || ""}
-                onChange={e => setCategoryBudgets(prev => ({ ...prev, [cat]: Number(e.target.value) }))}
-                fullWidth
-              />
-            ))}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBudgetDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => setBudgetDialogOpen(false)} variant="contained">Save Budgets</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Savings Goal Dialog */}
-      <Dialog open={savingsGoalDialogOpen} onClose={() => setSavingsGoalDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Set Savings Goal</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 1 }}>
-            <TextField
-              label="Savings Goal Amount"
-              type="number"
-              value={savingsGoal || ""}
-              onChange={e => setSavingsGoal(Number(e.target.value))}
-              fullWidth
-              autoFocus
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSavingsGoalDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => setSavingsGoalDialogOpen(false)} variant="contained">Save Goal</Button>
+          <Button onClick={handleDelete} color="error">Delete</Button>
         </DialogActions>
       </Dialog>
     </Container>

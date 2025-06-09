@@ -20,7 +20,10 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const result = await onSubmit({ name, email, password });
+    const data = type === "login" 
+      ? { email, password }
+      : { name, email, password };
+    const result = await onSubmit(data);
     if (result) setError(result);
   };
 
