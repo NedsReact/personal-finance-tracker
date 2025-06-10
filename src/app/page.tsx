@@ -1,5 +1,5 @@
 "use client"; 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import DashboardSummary from "@/components/DashboardSummary";
 import TransactionsList from "@/components/TransactionsList";
@@ -23,10 +23,15 @@ import Typography from "@mui/material/Typography";
 import type { MockTransaction } from "@/lib/mockTransactions";
 
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
   const userId = "user123"; // Mock user ID
   const [transactions, setTransactions] = useState<MockTransaction[]>([]);
   const [editTx, setEditTx] = useState<MockTransaction | null>(null);
   const [deleteTx, setDeleteTx] = useState<MockTransaction | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Filter state
   const [startDate, setStartDate] = useState<string>("");
@@ -35,8 +40,9 @@ export default function Home() {
   const [selectedType, setSelectedType] = useState<"" | "income" | "expense">("");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const totalIncome = transactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
-  const totalExpenses = transactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
+  // Only calculate these values on the client side
+  const totalIncome = mounted ? transactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0) : 0;
+  const totalExpenses = mounted ? transactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0) : 0;
   const balance = totalIncome - totalExpenses;
 
   const predefinedCategories = [
@@ -80,10 +86,11 @@ export default function Home() {
   });
 
   function handleAdd(tx: Omit<MockTransaction, "id" | "userId">) {
+    const newId = mounted ? (Math.random() * 1000000).toFixed(0) : "0";
     setTransactions(prev => [
       {
         ...tx,
-        id: (Math.random() * 1000000).toFixed(0),
+        id: newId,
         userId,
       },
       ...prev,
@@ -105,6 +112,11 @@ export default function Home() {
   function handleAddCategory(name: string) {
     if (!name || categories.includes(name)) return;
     setUserCategories(prev => [...prev, name]);
+  }
+
+  // Only render the main content when mounted
+  if (!mounted) {
+    return null; // or a loading state
   }
 
   return (
