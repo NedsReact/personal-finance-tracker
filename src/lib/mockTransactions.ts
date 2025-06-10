@@ -1,12 +1,12 @@
-export interface MockTransaction {
+export type MockTransaction = {
   id: string;
   userId: string;
   date: string; // ISO string
   amount: number;
   category: string;
   description: string;
-  type: 'income' | 'expense';
-}
+  type: "income" | "expense";
+};
 
 export const mockTransactions: MockTransaction[] = [
   {

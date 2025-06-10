@@ -53,11 +53,9 @@ jest.mock('@/components/TransactionsList', () => {
 jest.mock('@/components/TransactionForm', () => {
   return function TransactionForm({ 
     onSubmit, 
-    initialValues, 
     "data-editing": isEditing 
   }: { 
     onSubmit: (data: Omit<MockTransaction, "id" | "userId">) => void;
-    initialValues?: MockTransaction;
     "data-editing"?: boolean;
   }) {
     return (

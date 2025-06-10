@@ -5,7 +5,6 @@ import DashboardSummary from "@/components/DashboardSummary";
 import TransactionsList from "@/components/TransactionsList";
 import TransactionForm from "@/components/TransactionForm";
 import ChartsDisplay from "@/components/ChartsDisplay";
-import { mockTransactions, MockTransaction } from "@/lib/mockTransactions";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
@@ -21,10 +20,10 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
+import type { MockTransaction } from "@/lib/mockTransactions";
 
 export default function Home() {
-  // For demo, use userId '1'
-  const userId = '1';
+  const userId = "user123"; // Mock user ID
   const [transactions, setTransactions] = useState<MockTransaction[]>([]);
   const [editTx, setEditTx] = useState<MockTransaction | null>(null);
   const [deleteTx, setDeleteTx] = useState<MockTransaction | null>(null);
@@ -117,7 +116,7 @@ export default function Home() {
         categories={categories}
         onAddCategory={() => setAddCategoryOpen(true)}
         data-editing={!!editTx}
-        initialValues={editTx || undefined}
+        initial={editTx || undefined}
       />
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <Button variant="outlined" onClick={() => setBudgetDialogOpen(true)}>Set Budgets</Button>
@@ -218,7 +217,7 @@ export default function Home() {
             submitLabel="Update"
             categories={categories}
             onAddCategory={() => setAddCategoryOpen(true)}
-            initialValues={editTx || undefined}
+            initial={editTx || undefined}
             data-editing={true}
           />
         </DialogContent>
@@ -232,6 +231,73 @@ export default function Home() {
         <DialogActions>
           <Button onClick={() => setDeleteTx(null)}>Cancel</Button>
           <Button onClick={handleDelete} color="error">Delete</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Add Category Dialog */}
+      <Dialog open={addCategoryOpen} onClose={() => setAddCategoryOpen(false)}>
+        <DialogTitle>Add Category</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Category Name"
+            fullWidth
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddCategoryOpen(false)}>Cancel</Button>
+          <Button onClick={() => {
+            if (newCategory) {
+              handleAddCategory(newCategory);
+              setNewCategory("");
+              setAddCategoryOpen(false);
+            }
+          }}>Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Budget Dialog */}
+      <Dialog open={budgetDialogOpen} onClose={() => setBudgetDialogOpen(false)}>
+        <DialogTitle>Set Category Budgets</DialogTitle>
+        <DialogContent>
+          {categories.map(category => (
+            <TextField
+              key={category}
+              label={category}
+              type="number"
+              fullWidth
+              margin="dense"
+              value={categoryBudgets[category] || ""}
+              onChange={(e) => setCategoryBudgets(prev => ({
+                ...prev,
+                [category]: Number(e.target.value)
+              }))}
+            />
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBudgetDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Savings Goal Dialog */}
+      <Dialog open={savingsGoalDialogOpen} onClose={() => setSavingsGoalDialogOpen(false)}>
+        <DialogTitle>Set Savings Goal</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Savings Goal"
+            type="number"
+            fullWidth
+            value={savingsGoal}
+            onChange={(e) => setSavingsGoal(Number(e.target.value))}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSavingsGoalDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Container>

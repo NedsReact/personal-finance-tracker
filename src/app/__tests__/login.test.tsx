@@ -1,7 +1,6 @@
 /** @jest-environment jsdom */
 import * as React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { useRouter } from 'next/navigation';
 import LoginPage from '../login/page';
 
 const mockPush = jest.fn();

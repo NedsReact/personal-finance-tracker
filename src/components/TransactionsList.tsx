@@ -7,18 +7,13 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import type { MockTransaction } from "@/lib/mockTransactions";
 
 interface TransactionsListProps {
-  transactions: MockTransaction[];
-  onEdit?: (transaction: MockTransaction) => void;
-  onDelete?: (id: string) => void;
+  transactions: (MockTransaction & { actions?: React.ReactNode })[];
 }
 
-export default function TransactionsList({ transactions, onEdit, onDelete }: TransactionsListProps) {
+export default function TransactionsList({ transactions }: TransactionsListProps) {
   if (transactions.length === 0) {
     return (
       <Paper sx={{ p: 2, mt: 2 }}>
@@ -26,16 +21,6 @@ export default function TransactionsList({ transactions, onEdit, onDelete }: Tra
       </Paper>
     );
   }
-
-  const formatAmount = (amount: number, type: 'income' | 'expense') => {
-    const formatted = amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-    return `${type === 'income' ? '+' : '-'}${formatted}`;
-  };
 
   return (
     <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -50,7 +35,7 @@ export default function TransactionsList({ transactions, onEdit, onDelete }: Tra
             <TableCell>Description</TableCell>
             <TableCell align="right">Amount</TableCell>
             <TableCell>Type</TableCell>
-            {(onEdit || onDelete) && <TableCell>Actions</TableCell>}
+            {transactions.some(tx => tx.actions) && <TableCell>Actions</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -60,32 +45,10 @@ export default function TransactionsList({ transactions, onEdit, onDelete }: Tra
               <TableCell>{tx.category}</TableCell>
               <TableCell>{tx.description}</TableCell>
               <TableCell align="right" style={{ color: tx.type === 'income' ? 'green' : 'red' }}>
-                {formatAmount(tx.amount, tx.type)}
+                {tx.type === 'income' ? '+' : '-'}${tx.amount.toLocaleString()}
               </TableCell>
               <TableCell>{tx.type}</TableCell>
-              {(onEdit || onDelete) && (
-                <TableCell>
-                  {onEdit && (
-                    <IconButton 
-                      size="small" 
-                      onClick={() => onEdit(tx)}
-                      aria-label="edit"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                  {onDelete && (
-                    <IconButton 
-                      size="small" 
-                      color="error" 
-                      onClick={() => onDelete(tx.id)}
-                      aria-label="delete"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                </TableCell>
-              )}
+              {tx.actions && <TableCell>{tx.actions}</TableCell>}
             </TableRow>
           ))}
         </TableBody>
